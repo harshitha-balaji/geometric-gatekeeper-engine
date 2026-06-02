@@ -201,4 +201,14 @@ Hardcoded spatial thresholds make adaptation difficult. Externalizing environmen
 
 ---
 
+## Sample Video Attribution
+
+The sample traffic footage used for testing and demonstration purposes was sourced from:
+
+https://www.kaggle.com/code/mateuszk013/vehicle-speed-estimation-with-yolo11-opencv
+
+Credit belongs to the original author and dataset providers. Please refer to the Kaggle page for licensing information and usage terms.
+
+---
+
 *Built as a deterministic computer vision project to explore foreground extraction, object identity persistence, and geometric boundary analytics in real-time video streams.*
