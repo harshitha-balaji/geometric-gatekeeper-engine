@@ -1,0 +1,13 @@
+# Geometric Gatekeeper Engine — Dependencies
+# Install with: pip install -r requirements.txt
+# Then run:     python geometric_gatekeeper_engine.py
+
+# --- Computer Vision ---
+opencv-python==4.12.0.88
+
+# --- Numerical Computation ---
+numpy==2.3.4
+
+# --- Standard Library Modules Used ---
+# json
+# os

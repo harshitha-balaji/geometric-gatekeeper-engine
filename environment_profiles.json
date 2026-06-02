@@ -1,0 +1,14 @@
+{
+  "highway_traffic": {
+    "min_area": 400,
+    "max_area": 50000,
+    "threshold_y": 320,
+    "labels": ["Inbound", "Outbound"]
+  },
+  "warehouse_safety": {
+    "min_area": 150,
+    "max_area": 15000,
+    "threshold_y": 180,
+    "labels": ["Entering Hazard", "Exiting Hazard"]
+  }
+}

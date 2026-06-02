@@ -1,0 +1,10 @@
+{
+  "global_settings": {
+    "target_width": 640,
+    "bg_history": 500,
+    "bg_threshold": 16,
+    "memory_limit": 15,
+    "spatial_proximity_threshold": 50.0,
+    "buffer_offset": 15
+  }
+}
