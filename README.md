@@ -1,11 +1,11 @@
 # 🎯 Geometric Gatekeeper Engine (GGE)
 
-> **Spatial-temporal object tracking and directional boundary pipeline** — detects foreground anomalies across frames, maps continuous identities using Euclidean centroid matrices, and evaluates crossing trajectories through an adaptive hysteresis buffer zone. No deep learning dependencies, pure geometric computer vision architecture.
+> **Config-driven object tracking and directional counting engine** — detects moving foreground objects, maintains identity across frames via Euclidean centroid mapping, and enforces a hysteresis gate to count only clean, complete crossings. No deep learning. Pure geometric computer vision.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
 [![CV](https://img.shields.io/badge/CV-OpenCV-5C3EE8?style=flat-square)](https://opencv.org/)
 [![Tracking](https://img.shields.io/badge/Tracking-NumPy-013243?style=flat-square)](https://numpy.org/)
-[![Architecture](https://img.shields.io/badge/Architecture-Config_Driven-yellow?style=flat-square)](https://github.com/)
+![Config](https://img.shields.io/badge/architecture-config--driven-yellow?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Status](https://img.shields.io/badge/status-complete-brightgreen?style=flat-square)
 
@@ -13,7 +13,9 @@
 
 ## What is this?
 
-Most object counting systems rely on fragile single-line triggers that frequently double-count targets when they hover near a threshold. GGE tracks moving foreground structures through a spatial-temporal state machine — maintaining object identity across frames, resolving proximity relationships through Euclidean centroid mapping, and enforcing a two-line hysteresis buffer — before updating directional metrics only when an object completely traverses the gate.
+Single-line counting systems double-count objects that hover near a threshold. GGE solves this with a two-line hysteresis gate — an object is counted only when it fully traverses the buffer zone, never when it lingers at the boundary.
+
+Give it a video source and an environment profile, and it tracks every moving object frame-by-frame: assigning identities, persisting them through occlusion, and updating directional counts only on clean, committed crossings.
 
 ```text
 Available Environment Profiles:
@@ -38,10 +40,10 @@ Enter video source selection:
 
 ## Features
 
-- **Geometric anomaly detection** — isolates moving structures using adaptive MOG2 Gaussian mixtures and morphological filtering
-- **Euclidean identity assignment** — maps object centroids across sequential frames using optimized distance matrices
+- **Foreground detection** — isolates moving objects using adaptive MOG2 Gaussian mixtures and morphological filtering
+- **Euclidean identity assignment** — maps object centroids across sequential frames using vectorized distance matrices
 - **Double-line hysteresis gating** — prevents bounce-induced double counting through a configurable deadband buffer zone
-- **Config-driven profile swapping** — separates environment constraints and operational parameters from engine logic
+- **Hot-swappable environment profiles** — separates spatial constraints and operational parameters from engine logic
 - **Temporal memory persistence** — maintains identities for temporarily occluded objects before clearing expired tracks
 - **Multi-domain support** — switch instantly between highway traffic monitoring and warehouse safety analytics
 
@@ -49,36 +51,30 @@ Enter video source selection:
 
 ## How It Works
 
-The engine runs three core geometric stages:
+Three sequential stages process each video frame:
 
-### 1. Spatial Anomaly Extraction (The "Detector" Layer)
+### 1. Foreground Extraction
+Six-stage pipeline that isolates moving objects from static background:
+- **Frame normalization** — resizes incoming frames to a configured width for stable spatial calculations
+- **Background subtraction** — adaptive MOG2 Gaussian mixture modeling isolates moving elements
+- **Shadow suppression** — binary thresholding removes gray-level shadow artifacts
+- **Morphological closing** — dilation and erosion passes clean foreground masks using an elliptical kernel
+- **Contour extraction** — external object boundaries pulled from cleaned foreground masks
+- **Area filtering** — retains only contours that satisfy the profile's min/max area constraints
 
-Six-stage foreground extraction pipeline:
+### 2. Identity Tracking
+Continuous object association across frames:
+- **Centroid computation** — geometric center coordinate calculated for every detected object
+- **Distance matrix assembly** — Euclidean distances computed between historical and incoming centroids
+- **Proximity association** — identities assigned via sorted minimum-distance matching
+- **Memory decay** — disappeared objects held temporarily before automatic deregistration
 
-- **Geometric Regularization** — resizes incoming frames to a normalized width for stable spatial calculations
-- **Background Subtraction** — applies adaptive MOG2 Gaussian mixture modeling to isolate moving elements
-- **Shadow Suppression** — removes gray-level shadow artifacts through binary thresholding
-- **Morphological Closing** — performs dilation and erosion passes using an elliptical structural kernel
-- **Contour Ingestion** — extracts external object boundaries from cleaned foreground masks
-- **Domain Constraint Filtering** — retains only structures that satisfy configured area constraints
-
-### 2. Identity State Assignment (The "Tracker" Layer)
-
-Continuous object association pipeline:
-
-- **Centroid Computation** — calculates the geometric center coordinate of every detected object
-- **Distance Matrix Assembly** — computes Euclidean distance relationships between historical and incoming targets
-- **Proximity Association** — maps identities using sorted minimum-distance assignments
-- **Memory Queue Decay** — maintains disappeared objects temporarily before automatic deregistration
-
-### 3. Hysteresis Evaluation (The "Gatekeeper" Layer)
-
-Directional boundary evaluation pipeline:
-
-- **Buffer Ingestion** — constructs upper and lower safety thresholds around a configurable baseline
-- **Orientation Assignment** — records the initial approach direction of tracked objects
-- **Breach Verification** — increments metrics only when a target completely crosses the full buffer region
-- **State Locking** — prevents duplicate counts by permanently consuming completed traversal states
+### 3. Hysteresis Gating
+Directional count logic that prevents double-counting:
+- **Buffer construction** — upper and lower safety thresholds built around a configurable baseline coordinate
+- **Approach direction recording** — initial trajectory of each tracked object logged on first detection
+- **Breach verification** — count incremented only when an object fully crosses the complete buffer region
+- **State locking** — completed traversal states consumed permanently; re-entry cannot trigger a duplicate count
 
 ---
 
@@ -92,18 +88,16 @@ geometric_gatekeeper_engine/
 └── requirements.txt
 ```
 
-The engine is deliberately config-driven — `geometric_gatekeeper_engine.py` contains only logic, never hardcoded environment values.
+`geometric_gatekeeper_engine.py` contains only logic — never hardcoded environment values. All spatial parameters live in config.
 
 ---
 
 ## Tech Stack
 
 | Layer | Library |
-|---------|---------|
+|-------|---------|
 | Computer vision operations | `OpenCV` |
 | Numerical computation & distance matrices | `NumPy` |
-| Configuration loading | `json` (stdlib) |
-| System integration | `os` (stdlib) |
 
 ---
 
@@ -158,7 +152,6 @@ Press `q` while the display window is active to stop execution.
 ### `environment_profiles.json`
 
 Each environment profile contains:
-
 - `min_area` — minimum contour area accepted by the detector
 - `max_area` — maximum contour area accepted by the detector
 - `threshold_y` — baseline coordinate used to construct the gate
@@ -170,32 +163,29 @@ To add a new environment, create a new top-level profile and load it through the
 
 ## Design Decisions
 
-### Why no ML model?
+**Why no ML model?**
+GGE was built deterministic deliberately — spatial relationships and temporal continuity instead of learned representations. The engine stays lightweight, explainable, and capable of real-time execution on modest hardware without GPUs or pretrained weights. The ceiling of this approach (crowded scenes, severe occlusion) directly motivates why detection models like YOLO exist.
 
-This project was intentionally built using deterministic geometric computer vision. By relying on spatial relationships and temporal continuity instead of learned representations, the engine remains lightweight, explainable, and capable of real-time execution on modest hardware without requiring GPUs or pretrained models.
-
-### Why config-driven?
-
-Hardcoded spatial thresholds make adaptation difficult. Externalizing environment profiles allows the same tracking engine to operate across multiple deployment scenarios simply by modifying configuration files rather than rewriting code.
+**Why config-driven?**
+Hardcoded spatial thresholds make adaptation impossible across environments. Externalising profiles means the same tracking engine handles highway traffic and warehouse safety without touching a line of engine logic.
 
 ---
 
 ## Roadmap
 
-- [ ] Multi-line directional gate structures
+- [ ] Kalman filter integration for motion prediction under occlusion
 - [ ] Angled and vertical boundary support
-- [ ] Adaptive buffer sizing based on scene depth
-- [ ] Kalman filter integration for motion prediction
+- [ ] Adaptive buffer sizing based on estimated scene depth
+- [ ] Multi-line gate structures for lane-level counting
 - [ ] Live metrics export to time-series databases
-- [ ] Multi-camera tracking support
 
 ---
 
 ## Limitations
 
-- Sudden lighting changes, weather shifts, or camera exposure fluctuations can affect foreground extraction quality
+- Sudden lighting changes or camera exposure fluctuations can affect foreground extraction quality
 - Closely grouped objects may merge into a single contour, causing identity ambiguity
-- Fast-moving objects can exceed the configured proximity threshold and trigger tracking discontinuities
+- Fast-moving objects can exceed the proximity threshold and trigger tracking discontinuities
 - Camera vibration or unstable mounting may introduce centroid drift and counting inaccuracies
 - Performance depends on appropriate environment-specific contour area constraints
 
@@ -203,12 +193,11 @@ Hardcoded spatial thresholds make adaptation difficult. Externalizing environmen
 
 ## Sample Video Attribution
 
-The sample traffic footage used for testing and demonstration purposes was sourced from:
-
+Sample traffic footage used for testing was sourced from:
 https://www.kaggle.com/code/mateuszk013/vehicle-speed-estimation-with-yolo11-opencv
 
-Credit belongs to the original author and dataset providers. Please refer to the Kaggle page for licensing information and usage terms.
+Credit belongs to the original author and dataset providers. Refer to the Kaggle page for licensing and usage terms.
 
 ---
 
-*Built as a deterministic computer vision project to explore foreground extraction, object identity persistence, and geometric boundary analytics in real-time video streams.*
+*Built deterministic-first. The ceiling of this approach is the reason YOLO exists.*
