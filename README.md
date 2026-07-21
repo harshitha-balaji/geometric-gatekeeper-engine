@@ -1,4 +1,8 @@
 # 🎯 Geometric Gatekeeper Engine (GGE)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+[![OpenCV](https://img.shields.io/badge/CV-OpenCV-5C3EE8?style=flat-square)](https://opencv.org/)
+[![NumPy](https://img.shields.io/badge/Numerical-NumPy-013243?style=flat-square)](https://numpy.org/)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
 > A rule-based computer vision pipeline for object tracking and directional counting using centroid tracking and hysteresis-based gate crossing.
 
